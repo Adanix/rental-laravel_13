@@ -309,14 +309,40 @@
 
                 <!-- Form Upload Bukti Pembayaran -->
                 <div class="pt-4 border-t border-amber-200">
-                    <form method="POST" action="{{ route('my-bookings.payment', $booking->code) }}" enctype="multipart/form-data" class="space-y-4">
+                    <form
+                        method="POST"
+                        action="{{ route('my-bookings.payment', $booking->code) }}"
+                        enctype="multipart/form-data"
+                        class="space-y-4"
+                        x-data="{
+                            previewUrl: null,
+                            fileName: '',
+                            fileSize: '',
+                            handleFile(event) {
+                                const file = event.target.files[0];
+                                if (!file) {
+                                    this.previewUrl = null;
+                                    this.fileName = '';
+                                    this.fileSize = '';
+                                    return;
+                                }
+                                this.fileName = file.name;
+                                this.fileSize = (file.size / 1024).toFixed(1) + ' KB';
+                                if (file.type.startsWith('image/')) {
+                                    this.previewUrl = URL.createObjectURL(file);
+                                } else {
+                                    this.previewUrl = null;
+                                }
+                            }
+                        }"
+                    >
                         @csrf
                         <h4 class="text-sm font-bold text-slate-900">Sudah Melakukan Pembayaran? Unggah Bukti Transfer di Sini</h4>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label for="method" class="block text-xs font-semibold text-slate-700 mb-1">Metode yang Digunakan</label>
-                                <select name="method" id="method" required class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm">
+                                <select name="method" id="method" required class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                     <option value="transfer">Transfer Bank Manual</option>
                                     <option value="qris">QRIS</option>
                                     <option value="cash">Tunai (Di Tempat)</option>
@@ -324,14 +350,36 @@
                             </div>
 
                             <div>
-                                <label for="proof" class="block text-xs font-semibold text-slate-700 mb-1">Foto / Screenshot Bukti Transfer</label>
-                                <input type="file" name="proof" id="proof" accept="image/*" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2.5 file:px-3 file:rounded-xl file:border-0 file:bg-indigo-50 file:text-indigo-700 file:font-semibold cursor-pointer" />
+                                <label for="proof" class="block text-xs font-semibold text-slate-700 mb-1">Foto / Screenshot Bukti Transfer <span class="text-rose-500 font-bold">*</span></label>
+                                <input
+                                    type="file"
+                                    name="proof"
+                                    id="proof"
+                                    accept="image/*"
+                                    required
+                                    x-on:change="handleFile($event)"
+                                    class="w-full text-xs text-slate-500 file:mr-3 file:py-2.5 file:px-3 file:rounded-xl file:border-0 file:bg-indigo-50 file:text-indigo-700 file:font-semibold cursor-pointer"
+                                />
                             </div>
                         </div>
 
+                        <!-- Live Image Preview Card -->
+                        <template x-if="previewUrl">
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+                                <img :src="previewUrl" alt="Pratinjau Bukti" class="w-16 h-16 object-cover rounded-lg border border-slate-300 bg-white shadow-2xs shrink-0" />
+                                <div class="min-w-0 flex-1 text-xs">
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                        ✓ Foto Bukti Siap Diunggah
+                                    </span>
+                                    <p class="font-bold text-slate-800 truncate mt-1" x-text="fileName"></p>
+                                    <p class="text-slate-400 text-[11px]" x-text="'Ukuran file: ' + fileSize"></p>
+                                </div>
+                            </div>
+                        </template>
+
                         <div>
                             <label for="payment_notes" class="block text-xs font-semibold text-slate-700 mb-1">Catatan Pembayaran (Nama Pengirim / Bank Asal)</label>
-                            <input type="text" name="notes" id="payment_notes" placeholder="Contoh: Transfer dari BCA a/n Budi Pratama" class="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm" />
+                            <input type="text" name="notes" id="payment_notes" placeholder="Contoh: Transfer dari BCA a/n Budi Pratama" class="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
 
                         <div class="flex justify-end">

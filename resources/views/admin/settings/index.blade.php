@@ -103,17 +103,25 @@
                         />
                     </div>
 
-                    <div class="sm:col-span-3 pt-2">
+                    <div class="sm:col-span-3 pt-2" x-data="{ preview: null }">
                         <label for="qris_file" class="block text-xs font-semibold text-slate-700 mb-1">Upload Gambar QRIS Statis</label>
                         <div class="flex items-center gap-4">
-                            @if(!empty($settings['qris_image']))
-                                <img src="{{ $settings['qris_image'] }}" alt="QRIS Saat ini" class="w-20 h-20 object-contain border border-slate-200 rounded-lg p-1 bg-white">
-                            @endif
+                            <template x-if="preview">
+                                <img :src="preview" alt="Pratinjau QRIS Baru" class="w-20 h-20 object-contain border-2 border-indigo-500 rounded-lg p-1 bg-white shadow-xs">
+                            </template>
+                            <template x-if="!preview">
+                                <div>
+                                    @if(!empty($settings['qris_image']))
+                                        <img src="{{ $settings['qris_image'] }}" alt="QRIS Saat ini" class="w-20 h-20 object-contain border border-slate-200 rounded-lg p-1 bg-white">
+                                    @endif
+                                </div>
+                            </template>
                             <input
                                 type="file"
                                 name="qris_file"
                                 id="qris_file"
                                 accept="image/*"
+                                x-on:change="const f = $event.target.files[0]; preview = f ? URL.createObjectURL(f) : null"
                                 class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-indigo-50 file:text-indigo-700 file:font-semibold cursor-pointer"
                             />
                         </div>

@@ -20,7 +20,7 @@ class BlackoutController extends Controller
         }
 
         $blackouts = $query->latest('start_at')->paginate(20)->withQueryString();
-        $items = Item::active()->orderBy('name')->get();
+        $items = Item::active()->with(['category', 'images'])->orderBy('name')->get();
 
         return view('admin.blackouts.index', compact('blackouts', 'items'));
     }

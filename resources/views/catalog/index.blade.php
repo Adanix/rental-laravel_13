@@ -16,71 +16,95 @@
 
             <!-- Date & Search Form Card -->
             <div class="mt-8 bg-white text-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl border border-white/20">
-                <form method="GET" action="{{ route('home') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                    <!-- Search input -->
-                    <div>
-                        <label for="q" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                            Cari Barang
-                        </label>
-                        <input
-                            id="q"
-                            type="text"
-                            name="q"
-                            value="{{ request('q') }}"
-                            placeholder="Kamera, drone, tenda..."
-                            class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        />
-                    </div>
+                <form
+                    method="GET"
+                    action="{{ route('home') }}"
+                    x-data="{
+                        startAt: '{{ request('start_at') }}',
+                        endAt: '{{ request('end_at') }}',
+                        get isInvalidRange() {
+                            return this.startAt && this.endAt && new Date(this.endAt) <= new Date(this.startAt);
+                        }
+                    }"
+                    class="space-y-3"
+                >
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        <!-- Search input -->
+                        <div>
+                            <label for="q" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Cari Barang
+                            </label>
+                            <input
+                                id="q"
+                                type="text"
+                                name="q"
+                                value="{{ request('q') }}"
+                                placeholder="Kamera, drone, tenda..."
+                                class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            />
+                        </div>
 
-                    <!-- Date Start -->
-                    <div>
-                        <label for="start_at" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                            Mulai Sewa (Ambil)
-                        </label>
-                        <input
-                            id="start_at"
-                            type="datetime-local"
-                            name="start_at"
-                            value="{{ request('start_at') }}"
-                            class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        />
-                    </div>
+                        <!-- Date Start -->
+                        <div>
+                            <label for="start_at" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Mulai Sewa (Ambil)
+                            </label>
+                            <input
+                                id="start_at"
+                                type="datetime-local"
+                                name="start_at"
+                                x-model="startAt"
+                                class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            />
+                        </div>
 
-                    <!-- Date End -->
-                    <div>
-                        <label for="end_at" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                            Selesai Sewa (Kembali)
-                        </label>
-                        <input
-                            id="end_at"
-                            type="datetime-local"
-                            name="end_at"
-                            value="{{ request('end_at') }}"
-                            class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        />
-                    </div>
+                        <!-- Date End -->
+                        <div>
+                            <label for="end_at" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                Selesai Sewa (Kembali)
+                            </label>
+                            <input
+                                id="end_at"
+                                type="datetime-local"
+                                name="end_at"
+                                x-model="endAt"
+                                :min="startAt"
+                                class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            />
+                        </div>
 
-                    <!-- Submit & Reset -->
-                    <div class="flex items-center gap-2">
-                        <button
-                            type="submit"
-                            class="flex-1 min-h-[44px] px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2"
-                        >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            Cek Unit
-                        </button>
-
-                        @if(request()->hasAny(['q', 'category', 'start_at', 'end_at', 'min_price', 'max_price']))
-                            <a
-                                href="{{ route('home') }}"
-                                class="min-h-[44px] px-3 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 flex items-center justify-center text-sm"
-                                title="Reset Filter"
+                        <!-- Submit & Reset -->
+                        <div class="flex items-center gap-2">
+                            <button
+                                type="submit"
+                                :disabled="isInvalidRange"
+                                :class="isInvalidRange ? 'opacity-50 cursor-not-allowed bg-slate-400' : 'bg-indigo-600 hover:bg-indigo-700'"
+                                class="flex-1 min-h-[44px] px-4 py-2.5 rounded-xl text-white font-semibold text-sm transition shadow-sm flex items-center justify-center gap-2"
                             >
-                                Reset
-                            </a>
-                        @endif
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Cek Unit
+                            </button>
+
+                            @if(request()->hasAny(['q', 'category', 'start_at', 'end_at', 'min_price', 'max_price']))
+                                <a
+                                    href="{{ route('home') }}"
+                                    class="min-h-[44px] px-3 py-2.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 flex items-center justify-center text-sm"
+                                    title="Reset Filter"
+                                >
+                                    Reset
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Date Warning if invalid -->
+                    <div x-show="isInvalidRange" class="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                        <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span>Waktu selesai sewa harus setelah waktu mulai sewa.</span>
                     </div>
                 </form>
             </div>

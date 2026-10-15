@@ -1,5 +1,5 @@
 <x-layouts.admin title="Kalender Ketersediaan & Jadwal">
-    <div class="space-y-6">
+    <div class="space-y-6" x-data="{ unitFilter: '' }">
         <!-- Header & Controls -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -32,19 +32,41 @@
 
         <!-- Filter & Legend Bar -->
         <x-card class="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <form method="GET" action="{{ route('admin.calendar') }}" class="flex items-center gap-3">
-                <input type="hidden" name="start_date" value="{{ $startDate->toDateString() }}">
-                <select
-                    name="category_id"
-                    onchange="this.form.submit()"
-                    class="min-h-[40px] px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                    <option value="">Semua Kategori Unit</option>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}</option>
-                    @endforeach
-                </select>
-            </form>
+            <div class="flex flex-wrap items-center gap-3">
+                <form method="GET" action="{{ route('admin.calendar') }}" class="flex items-center gap-2">
+                    <input type="hidden" name="start_date" value="{{ $startDate->toDateString() }}">
+                    <select
+                        name="category_id"
+                        onchange="this.form.submit()"
+                        class="min-h-[40px] px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="">Semua Kategori Unit</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                </form>
+
+                <div class="relative">
+                    <input
+                        type="text"
+                        x-model="unitFilter"
+                        placeholder="Cari nama unit..."
+                        class="min-h-[40px] pl-8 pr-7 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44 sm:w-56"
+                    />
+                    <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-3 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <button
+                        type="button"
+                        x-show="unitFilter"
+                        x-on:click="unitFilter = ''"
+                        class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs"
+                    >
+                        ✕
+                    </button>
+                </div>
+            </div>
 
             <!-- Legend -->
             <div class="flex flex-wrap items-center gap-3 text-xs">
@@ -89,7 +111,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-xs">
                         @foreach($items as $item)
-                            <tr class="hover:bg-slate-50/40">
+                            <tr class="hover:bg-slate-50/40" x-show="!unitFilter || '{{ strtolower(addslashes($item->name)) }}'.includes(unitFilter.toLowerCase().trim())">
                                 <td class="p-3 font-semibold text-slate-900 sticky left-0 bg-white z-10 shadow-[1px_0_0_0_#e2e8f0]">
                                     <div class="truncate max-w-[180px]">{{ $item->name }}</div>
                                     <div class="text-[11px] text-slate-400 font-normal">Stok: {{ $item->stock }} &bull; {{ $item->category->name }}</div>

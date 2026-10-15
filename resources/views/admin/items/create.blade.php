@@ -14,15 +14,33 @@
             action="{{ route('admin.items.store') }}"
             enctype="multipart/form-data"
             x-data="{
+                pricePerDay: {{ old('price_per_day', 0) }},
+                deposit: {{ old('deposit', 0) }},
                 specs: [
                     { key: 'Brand', value: '' },
                     { key: 'Kondisi', value: 'Sangat Baik' }
                 ],
+                previewImages: [],
                 addSpec() {
                     this.specs.push({ key: '', value: '' });
                 },
                 removeSpec(index) {
                     this.specs.splice(index, 1);
+                },
+                formatRp(num) {
+                    return 'Rp ' + new Intl.NumberFormat('id-ID').format(num || 0);
+                },
+                handleImages(e) {
+                    this.previewImages = [];
+                    const files = e.target.files;
+                    if (files) {
+                        for (let i = 0; i < files.length; i++) {
+                            this.previewImages.push({
+                                name: files[i].name,
+                                url: URL.createObjectURL(files[i])
+                            });
+                        }
+                    }
                 }
             }"
             class="space-y-6"
@@ -107,25 +125,41 @@
                 <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">Harga Sewa & Stok Fisik</h3>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <x-input
-                        label="Tarif Sewa per Hari (Rp)"
-                        name="price_per_day"
-                        type="number"
-                        min="0"
-                        step="1000"
-                        placeholder="Contoh: 150000"
-                        required
-                    />
+                    <div>
+                        <label for="price_per_day" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Tarif Sewa per Hari (Rp) <span class="text-rose-500 font-bold">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            name="price_per_day"
+                            id="price_per_day"
+                            x-model.number="pricePerDay"
+                            min="0"
+                            step="1000"
+                            placeholder="Contoh: 150000"
+                            required
+                            class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <span class="text-xs font-mono font-bold text-indigo-600 block mt-1" x-text="formatRp(pricePerDay)"></span>
+                    </div>
 
-                    <x-input
-                        label="Deposit Jaminan (Rp)"
-                        name="deposit"
-                        type="number"
-                        min="0"
-                        step="1000"
-                        placeholder="Contoh: 100000"
-                        required
-                    />
+                    <div>
+                        <label for="deposit" class="block text-sm font-medium text-slate-700 mb-1.5">
+                            Deposit Jaminan (Rp) <span class="text-rose-500 font-bold">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            name="deposit"
+                            id="deposit"
+                            x-model.number="deposit"
+                            min="0"
+                            step="1000"
+                            placeholder="Contoh: 100000"
+                            required
+                            class="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <span class="text-xs font-mono font-bold text-indigo-600 block mt-1" x-text="formatRp(deposit)"></span>
+                    </div>
 
                     <x-input
                         label="Total Stok Unit Fisik"
@@ -194,14 +228,30 @@
                     Pilih satu atau beberapa foto (JPG, PNG, WebP). Foto pertama akan otomatis menjadi foto utama. Gambar berukuran besar otomatis di-resize (max lebar 1200px).
                 </p>
 
-                <div class="mt-2">
+                <div class="mt-2 space-y-3">
                     <input
                         type="file"
                         name="images[]"
                         multiple
                         accept="image/*"
+                        x-on:change="handleImages($event)"
                         class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                     />
+
+                    <!-- Image Preview Grid -->
+                    <template x-if="previewImages.length > 0">
+                        <div class="pt-2">
+                            <span class="text-xs font-semibold text-slate-600 block mb-2">Pratinjau Foto yang Dipilih (<span x-text="previewImages.length"></span> foto):</span>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                                <template x-for="(img, idx) in previewImages" :key="idx">
+                                    <div class="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-square">
+                                        <img :src="img.url" :alt="img.name" class="w-full h-full object-cover" />
+                                        <div class="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[10px] px-1.5 py-0.5 truncate text-center" x-text="idx === 0 ? '★ Foto Utama' : 'Foto ' + (idx + 1)"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </x-card>
 
