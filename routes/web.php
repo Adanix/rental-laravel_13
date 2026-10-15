@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BlackoutController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CatalogController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,15 +23,20 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-// Customer Protected Routes (Placeholders for F2/F3)
+// Customer Protected Routes (F2 & F3)
 Route::middleware('auth')->group(function () {
-    Route::get('/bookings/create', function () {
-        return 'Booking Form Placeholder';
-    })->name('bookings.create');
+    Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 
-    Route::get('/my-bookings', function () {
-        return view('welcome');
-    })->name('my-bookings.index');
+    Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('my-bookings.index');
+    Route::get('/my-bookings/{code}', [BookingController::class, 'show'])->name('my-bookings.show');
+    Route::post('/my-bookings/{code}/cancel', [BookingController::class, 'cancel'])->name('my-bookings.cancel');
+    Route::get('/my-bookings/{code}/invoice', [BookingController::class, 'invoice'])->name('my-bookings.invoice');
+    
+    // Placeholder for payment proof upload (completed in F3)
+    Route::post('/my-bookings/{code}/payment', function () {
+        return back()->with('info', 'Sistem pembayaran sedang diproses.');
+    })->name('my-bookings.payment');
 });
 
 // Staff & Admin Protected Routes
@@ -50,7 +56,7 @@ Route::middleware(['auth', 'role:admin,staff'])->prefix('admin')->name('admin.')
     // Blackouts CRUD
     Route::resource('blackouts', BlackoutController::class)->only(['index', 'store', 'destroy']);
 
-    // Placeholder for other admin routes
+    // Placeholders for remaining admin routes
     Route::get('/bookings', function () {
         return 'bookings';
     })->name('bookings.index');

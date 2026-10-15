@@ -60,7 +60,7 @@
 ## 5. Status Eksekusi Fase
 - [x] F0: Fondasi (Migrasi, Enum, Model, Factory, Seeder Realistis, Auth & Layout Blade)
 - [x] F1: Katalog & Inventori (AvailabilityService Sweep-line, CRUD Staff & Publik)
-- [ ] F2: Booking Core (PricingService, CreateBookingAction, Live Alpine Form, My Bookings)
+- [x] F2: Booking Core (PricingService, CreateBookingAction, Live Alpine Form, My Bookings)
 - [ ] F3: Operasional & Siklus Sewa (Payment Gateway, Pickup, Return & Deposit Settlement, Walk-in, Invoice, Scheduler)
 - [ ] F4: Dashboard, Kalender, Laporan & Pengaturan (Operational Dashboard, Visual Calendar, CSV Report, Settings, Staff CRUD)
 - [ ] F5: Hardening & Dokumentasi (PreventLazyLoading, Rate Limiting, MIME Validation, Responsive Audit, README)
