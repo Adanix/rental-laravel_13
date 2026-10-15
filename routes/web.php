@@ -39,9 +39,7 @@ Route::middleware('auth')->group(function () {
 
 // Staff & Admin Protected Routes
 Route::middleware(['auth', 'role:admin,staff'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('welcome');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
     // Categories CRUD
     Route::resource('categories', CategoryController::class)->except(['show', 'create', 'edit']);
@@ -65,21 +63,20 @@ Route::middleware(['auth', 'role:admin,staff'])->prefix('admin')->name('admin.')
     Route::post('/bookings/{booking}/pickup', [\App\Http\Controllers\Admin\BookingController::class, 'pickup'])->name('bookings.pickup');
     Route::post('/bookings/{booking}/return', [\App\Http\Controllers\Admin\BookingController::class, 'return'])->name('bookings.return');
 
-    Route::get('/calendar', function () {
-        return 'calendar';
-    })->name('calendar');
+    // Visual Schedule Matrix / Calendar
+    Route::get('/calendar', [\App\Http\Controllers\Admin\CalendarController::class, 'index'])->name('calendar');
 
+    // Admin Exclusive Routes
     Route::middleware('role:admin')->group(function () {
-        Route::get('/reports', function () {
-            return 'reports';
-        })->name('reports.index');
+        Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export', [\App\Http\Controllers\Admin\ReportController::class, 'exportCsv'])->name('reports.export');
 
-        Route::get('/settings', function () {
-            return 'settings';
-        })->name('settings.index');
+        Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
 
-        Route::get('/staff', function () {
-            return 'staff';
-        })->name('staff.index');
+        Route::get('/staff', [\App\Http\Controllers\Admin\StaffController::class, 'index'])->name('staff.index');
+        Route::post('/staff', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->name('staff.store');
+        Route::put('/staff/{user}', [\App\Http\Controllers\Admin\StaffController::class, 'update'])->name('staff.update');
+        Route::delete('/staff/{user}', [\App\Http\Controllers\Admin\StaffController::class, 'destroy'])->name('staff.destroy');
     });
 });
