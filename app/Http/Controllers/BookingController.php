@@ -95,7 +95,7 @@ class BookingController extends Controller
     public function myBookings(Request $request): View
     {
         $query = Booking::where('user_id', $request->user()->id)
-            ->with(['items.item.category', 'payments'])
+            ->with(['items.item.images', 'items.item.category', 'payments'])
             ->latest();
 
         if ($request->filled('status')) {
@@ -110,7 +110,7 @@ class BookingController extends Controller
     public function show(Request $request, string $code): View
     {
         $booking = Booking::where('code', $code)
-            ->with(['items.item.category', 'payments.verifier', 'statusLogs.actor', 'user'])
+            ->with(['items.item.images', 'items.item.category', 'payments.verifier', 'statusLogs.actor', 'user'])
             ->firstOrFail();
 
         Gate::authorize('view', $booking);
@@ -179,7 +179,7 @@ class BookingController extends Controller
     public function invoice(string $code): View
     {
         $booking = Booking::where('code', $code)
-            ->with(['items.item.category', 'payments', 'user'])
+            ->with(['items.item.images', 'items.item.category', 'payments', 'user'])
             ->firstOrFail();
 
         Gate::authorize('view', $booking);

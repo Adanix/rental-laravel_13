@@ -243,4 +243,23 @@ class F2BookingCoreTest extends TestCase
         $response->assertSee('FAKTUR SEWA');
         $response->assertSee($booking->code);
     }
+
+    public function test_customer_can_view_my_bookings_list_without_lazy_loading_violation(): void
+    {
+        $customer = User::factory()->customer()->create();
+        $item = Item::factory()->create();
+
+        $action = app(CreateBookingAction::class);
+        $booking = $action->execute(
+            customer: $customer,
+            itemsWithQty: [['item_id' => $item->id, 'qty' => 1]],
+            startAt: Carbon::now()->addDays(2),
+            endAt: Carbon::now()->addDays(4)
+        );
+
+        $response = $this->actingAs($customer)->get('/my-bookings');
+        $response->assertStatus(200);
+        $response->assertSee($booking->code);
+        $response->assertSee($item->name);
+    }
 }

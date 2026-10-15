@@ -32,6 +32,7 @@ class CalendarController extends Controller
 
         $itemsQuery = Item::active()->with([
             'category',
+            'images',
             'blackouts' => function ($q) use ($startDate, $endDate) {
                 $q->where('start_at', '<=', $endDate)
                   ->where('end_at', '>=', $startDate);

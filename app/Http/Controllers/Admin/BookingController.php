@@ -33,7 +33,7 @@ class BookingController extends Controller
 
     public function index(Request $request): View
     {
-        $query = Booking::with(['user', 'items.item', 'payments'])->latest();
+        $query = Booking::with(['user', 'items.item.images', 'items.item.category', 'payments'])->latest();
 
         if ($request->filled('status')) {
             $query->where('status', $request->string('status'));
@@ -69,7 +69,7 @@ class BookingController extends Controller
 
     public function show(Booking $booking): View
     {
-        $booking->load(['user', 'items.item.category', 'payments.verifier', 'statusLogs.actor']);
+        $booking->load(['user', 'items.item.images', 'items.item.category', 'payments.verifier', 'statusLogs.actor']);
 
         return view('admin.bookings.show', compact('booking'));
     }

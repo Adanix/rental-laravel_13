@@ -41,14 +41,14 @@ class ReportController extends Controller
             $q->whereIn('status', [BookingStatus::CONFIRMED, BookingStatus::PICKED_UP, BookingStatus::RETURNED])
               ->whereBetween('start_at', [$startDate, $endDate]);
         })
-        ->with('item.category')
+        ->with(['item.images', 'item.category'])
         ->select('item_id', DB::raw('SUM(qty) as total_qty'), DB::raw('SUM(subtotal) as total_revenue'))
         ->groupBy('item_id')
         ->orderByDesc('total_qty')
         ->limit(10)
         ->get();
 
-        $recentBookings = (clone $bookingsQuery)->with(['user', 'items.item'])->latest()->limit(10)->get();
+        $recentBookings = (clone $bookingsQuery)->with(['user', 'items.item.images', 'items.item.category'])->latest()->limit(10)->get();
 
         return view('admin.reports.index', compact(
             'startDate',
@@ -79,7 +79,7 @@ class ReportController extends Controller
 
         $bookings = Booking::whereIn('status', [BookingStatus::CONFIRMED, BookingStatus::PICKED_UP, BookingStatus::RETURNED])
             ->whereBetween('start_at', [$startDate, $endDate])
-            ->with(['user', 'items.item'])
+            ->with(['user', 'items.item.images', 'items.item.category'])
             ->orderBy('start_at')
             ->get();
 

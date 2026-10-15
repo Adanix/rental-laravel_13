@@ -14,6 +14,8 @@ class Item extends Model
 {
     use HasFactory;
 
+    protected $with = ['images'];
+
     protected $fillable = [
         'category_id',
         'name',
@@ -64,7 +66,11 @@ class Item extends Model
 
     public function getPrimaryImageUrlAttribute(): string
     {
-        $primary = $this->images->firstWhere('is_primary', true) ?? $this->images->first();
+        if ($this->relationLoaded('images')) {
+            $primary = $this->images->firstWhere('is_primary', true) ?? $this->images->first();
+        } else {
+            $primary = $this->images()->where('is_primary', true)->first() ?? $this->images()->first();
+        }
 
         if ($primary && $primary->path) {
             if (str_starts_with($primary->path, 'http')) {

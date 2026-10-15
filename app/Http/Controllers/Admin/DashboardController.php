@@ -22,19 +22,19 @@ class DashboardController extends Controller
         // Key operational metrics
         $todayPickupsQuery = Booking::where('status', BookingStatus::CONFIRMED)
             ->whereDate('start_at', $today)
-            ->with(['user', 'items.item']);
+            ->with(['user', 'items.item.images', 'items.item.category']);
         $todayPickupsCount = $todayPickupsQuery->count();
         $todayPickups = $todayPickupsQuery->limit(5)->get();
 
         $todayReturnsQuery = Booking::where('status', BookingStatus::PICKED_UP)
             ->whereDate('end_at', $today)
-            ->with(['user', 'items.item']);
+            ->with(['user', 'items.item.images', 'items.item.category']);
         $todayReturnsCount = $todayReturnsQuery->count();
         $todayReturns = $todayReturnsQuery->limit(5)->get();
 
         $activeRentalsCount = Booking::where('status', BookingStatus::PICKED_UP)->count();
 
-        $overdueQuery = Booking::overdue()->with(['user', 'items.item']);
+        $overdueQuery = Booking::overdue()->with(['user', 'items.item.images', 'items.item.category']);
         $overdueCount = $overdueQuery->count();
         $overdueBookings = $overdueQuery->limit(5)->get();
 
