@@ -222,6 +222,49 @@
             </div>
         </x-card>
 
+        <!-- Payment History Card (if any payments exist) -->
+        @if($booking->payments->isNotEmpty())
+            <x-card class="p-6 sm:p-8 space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    Riwayat Pembayaran & Pengembalian Dana
+                </h3>
+                <div class="space-y-3">
+                    @foreach($booking->payments as $payment)
+                        <div class="p-3.5 rounded-xl border {{ $payment->status->value === 'verified' ? 'border-emerald-200 bg-emerald-50/30' : ($payment->status->value === 'rejected' ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200 bg-white') }} flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs sm:text-sm">
+                            <div>
+                                <div class="flex items-center gap-2 font-semibold text-slate-900">
+                                    <span>{{ $payment->type->label() }}</span>
+                                    <span class="text-slate-400">&bull;</span>
+                                    <span class="font-normal text-slate-600 uppercase">{{ $payment->method->label() }}</span>
+                                </div>
+                                <div class="text-xs text-slate-500 mt-1">
+                                    Nominal: <strong class="text-slate-800">{{ format_rupiah($payment->amount) }}</strong> &bull; {{ format_date_id($payment->created_at) }}
+                                </div>
+                                @if($payment->notes)
+                                    <div class="text-xs text-slate-600 mt-1 italic">
+                                        Catatan: {{ $payment->notes }}
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-3 sm:self-center">
+                                @if($payment->proof_path)
+                                    <a href="{{ Storage::url($payment->proof_path) }}" target="_blank" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline">
+                                        Lihat Bukti
+                                    </a>
+                                @endif
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border {{ $payment->status->badgeClass() }}">
+                                    {{ $payment->status->label() }}
+                                </span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </x-card>
+        @endif
+
         <!-- Payment Instructions & Upload Section (for PENDING orders) -->
         @if($booking->status->value === 'pending')
             <x-card class="p-6 sm:p-8 space-y-6 border-amber-200 bg-amber-50/20">

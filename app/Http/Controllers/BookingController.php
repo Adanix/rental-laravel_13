@@ -141,6 +141,41 @@ class BookingController extends Controller
         }
     }
 
+    public function uploadPayment(Request $request, string $code, \App\Contracts\PaymentGatewayInterface $gateway): RedirectResponse
+    {
+        $booking = Booking::where('code', $code)->firstOrFail();
+        Gate::authorize('view', $booking);
+
+        if ($booking->status !== BookingStatus::PENDING) {
+            return back()->with('error', 'Pesanan tidak dalam status menunggu pembayaran.');
+        }
+
+        $validated = $request->validate([
+            'method' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\PaymentMethod::class)],
+            'proof' => [$request->input('method') === 'cash' ? 'nullable' : 'required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
+            'notes' => ['nullable', 'string', 'max:500'],
+        ], [
+            'proof.required' => 'Bukti pembayaran wajib diunggah untuk transfer bank atau QRIS.',
+            'proof.max' => 'Ukuran file bukti pembayaran maksimal 5MB.',
+        ]);
+
+        $proofPath = null;
+        if ($request->hasFile('proof')) {
+            $proofPath = $request->file('proof')->store('payments', 'public');
+        }
+
+        $gateway->initiatePayment(
+            booking: $booking,
+            type: \App\Enums\PaymentType::RENTAL_AND_DEPOSIT,
+            method: \App\Enums\PaymentMethod::from($validated['method']),
+            amount: $booking->grand_total,
+            proofPath: $proofPath,
+            notes: $validated['notes'] ?? null
+        );
+
+        return back()->with('success', 'Bukti pembayaran berhasil diunggah! Mohon tunggu verifikasi oleh staff.');
+    }
+
     public function invoice(string $code): View
     {
         $booking = Booking::where('code', $code)

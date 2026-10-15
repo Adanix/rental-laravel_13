@@ -88,6 +88,9 @@ class TransitionBookingStatusAction
             'created_at' => now(),
         ]);
 
+        // Send queued notification to customer
+        $booking->user?->notify(new \App\Notifications\BookingStatusChangedNotification($booking, $newStatus, $reason));
+
         return $booking->fresh();
     }
 }

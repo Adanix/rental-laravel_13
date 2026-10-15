@@ -33,10 +33,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/my-bookings/{code}/cancel', [BookingController::class, 'cancel'])->name('my-bookings.cancel');
     Route::get('/my-bookings/{code}/invoice', [BookingController::class, 'invoice'])->name('my-bookings.invoice');
     
-    // Placeholder for payment proof upload (completed in F3)
-    Route::post('/my-bookings/{code}/payment', function () {
-        return back()->with('info', 'Sistem pembayaran sedang diproses.');
-    })->name('my-bookings.payment');
+    // Payment proof upload
+    Route::post('/my-bookings/{code}/payment', [BookingController::class, 'uploadPayment'])->name('my-bookings.payment');
 });
 
 // Staff & Admin Protected Routes
@@ -56,14 +54,16 @@ Route::middleware(['auth', 'role:admin,staff'])->prefix('admin')->name('admin.')
     // Blackouts CRUD
     Route::resource('blackouts', BlackoutController::class)->only(['index', 'store', 'destroy']);
 
-    // Placeholders for remaining admin routes
-    Route::get('/bookings', function () {
-        return 'bookings';
-    })->name('bookings.index');
-
-    Route::get('/bookings/walk-in', function () {
-        return 'walk-in';
-    })->name('bookings.walk-in');
+    // Staff & Admin Bookings Management
+    Route::get('/bookings', [\App\Http\Controllers\Admin\BookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/walk-in', [\App\Http\Controllers\Admin\BookingController::class, 'walkInCreate'])->name('bookings.walk-in');
+    Route::post('/bookings/walk-in', [\App\Http\Controllers\Admin\BookingController::class, 'walkInStore'])->name('bookings.walk-in.store');
+    Route::get('/bookings/{booking}', [\App\Http\Controllers\Admin\BookingController::class, 'show'])->name('bookings.show');
+    Route::post('/bookings/{booking}/payments/{payment}/verify', [\App\Http\Controllers\Admin\BookingController::class, 'verifyPayment'])->name('bookings.payments.verify');
+    Route::post('/bookings/{booking}/payments/{payment}/reject', [\App\Http\Controllers\Admin\BookingController::class, 'rejectPayment'])->name('bookings.payments.reject');
+    Route::post('/bookings/{booking}/payments/{payment}/settle', [\App\Http\Controllers\Admin\BookingController::class, 'settlePayment'])->name('bookings.payments.settle');
+    Route::post('/bookings/{booking}/pickup', [\App\Http\Controllers\Admin\BookingController::class, 'pickup'])->name('bookings.pickup');
+    Route::post('/bookings/{booking}/return', [\App\Http\Controllers\Admin\BookingController::class, 'return'])->name('bookings.return');
 
     Route::get('/calendar', function () {
         return 'calendar';
