@@ -1,58 +1,124 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# RentalHub - Web App Rental Serbaguna End-to-End
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web rental serbaguna (kamera, multimedia, perlengkapan outdoor, alat berat, dll.) yang dibangun dengan prinsip arsitektur monolith modern Laravel 13, Tailwind CSS v4, dan Alpine.js. Dirancang ramping, cepat, aman, dan mengotomatiskan seluruh siklus sewa mulai dari pencarian unit, pengecekan ketersediaan anti-double-booking, pembayaran transfer/QRIS, serah-terima unit (pickup), hingga pengembalian (return) dan penyelesaian deposit (deposit settlement).
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Fitur Utama & Keunggulan
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 1. Pelanggan (Customer)
+- **Katalog Publik & Pencarian**: Filter kategori, pencarian teks, dan filter tanggal "Tersedia pada rentang tanggal [Mulai - Selesai]".
+- **Live Durasi & Harga (Alpine.js)**: Kalkulasi durasi sewa, total tarif sewa, diskon sewa mingguan (&ge; 7 hari), dan total deposit jaminan secara transparan dan instan.
+- **Instruksi Pembayaran**: Petunjuk transfer bank manual & scan QRIS statis lengkap dengan form upload bukti bayar.
+- **Visual Status Timeline**: Lacak perjalanan status pesanan secara visual (Dibuat &rarr; Terkonfirmasi &rarr; Sedang Disewa &rarr; Selesai).
+- **Invoice Ramah Cetak**: Halaman faktur sewa siap cetak atau simpan ke PDF (`@media print`).
+- **Integrasi WhatsApp**: Tombol pre-filled pesan WhatsApp langsung ke nomor admin toko.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 2. Tim Operasional & Staff
+- **Dashboard Operasional Harian**: Ringkasan aksi harian mencakup Jadwal Pickup Hari Ini, Jadwal Return Hari Ini, Unit Sedang Disewa, Peringatan Keterlambatan (Overdue), dan Bukti Bayar Menunggu Verifikasi.
+- **Pemesanan Walk-in / Kasir**: Input pemesanan langsung di counter toko untuk pelanggan lama atau baru (cukup Nama & No. HP), opsi bayar tunai/QRIS langsung lunas, dan opsi langsung serah-terima unit (*direct pickup*).
+- **Serah-Terima Unit (Pickup Checklist)**: Checklist dan pencatatan kondisi awal unit saat diserahkan ke pelanggan.
+- **Pengembalian Unit & Settlement Deposit (Return)**:
+  - Deteksi otomatis keterlambatan jam/hari pengembalian.
+  - Perhitungan denda keterlambatan otomatis sesuai pengaturan tarif harian.
+  - Form input biaya kerusakan unit (jika ada).
+  - *Settlement Otomatis*: Jika deposit lebih besar dari total denda/kerusakan, sistem mencatat sisa pengembalian dana (*refund*). Jika biaya denda melebihi deposit, sistem mencatat tagihan tambahan (*additional fee*).
+- **Kalender Jadwal Matriks (14 Hari)**: Tampilan visual jadwal sewa unit dan masa blokir perbaikan (*blackout*) dengan indikator status warna interaktif.
+- **Manajemen Inventori**: CRUD kategori, CRUD unit sewa beserta multi-upload foto dan pengatur foto utama, serta jadwal blackout.
 
-## Learning Laravel
+### 3. Administrator
+- **Laporan & Analisis Pendapatan**:
+  - Filter periode tanggal laporan.
+  - Ringkasan pendapatan bersih: `Omset Sewa + Total Denda - Diskon`.
+  - Peringkat unit terlaris berdasarkan frekuensi peminjaman dan pendapatan yang dihasilkan.
+  - **Export CSV**: Unduh data laporan ke format spreadsheet CSV dengan encoding UTF-8 BOM.
+- **Pengaturan Sistem (Settings)**:
+  - Profil toko (Nama, No WhatsApp, Alamat).
+  - Rekening bank dan upload gambar QRIS statis.
+  - Aturan bisnis: Batas waktu bayar (*expires hours*), persentase denda keterlambatan per hari, persentase refund pembatalan, dan persentase diskon mingguan.
+- **Manajemen Staff**: Tambah, perbarui, dan kelola peran akun tim operasional dan administrator.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛡️ Arsitektur & Aturan Bisnis
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+1. **Anti Double-Booking & Sweep-Line Algorithm**:
+   - Pengecekan ketersediaan unit menggunakan algoritma *sweep-line* di PHP pada event point `start_at` dan `end_at`, sehingga pesanan non-kontemporer tidak dihitung sebagai tumpang-tindih.
+   - Saat pemesanan dibuat, transaksi dibungkus dalam `DB::transaction()` dengan pessimistic locking `Item::whereIn(...)->orderBy('id')->lockForUpdate()` untuk mencegah *race condition* dan *deadlock*.
+2. **State Machine Terpusat**:
+   - Seluruh perubahan status sewa dikontrol melalui `TransitionBookingStatusAction` yang memvalidasi transisi legal dan otomatis mencatat ke tabel audit `booking_status_logs`.
+   - Perubahan status otomatis memberitahukan pengguna melalui notifikasi antrean `BookingStatusChangedNotification`.
+3. **Otomasi Scheduler (`rental:process-schedules`)**:
+   - Otomatis mengubah booking `pending` yang melewati `expires_at` tanpa bukti bayar menjadi `expired` agar stok kembali tersedia.
+   - Deteksi pesanan terlambat (*overdue*) dan pengiriman pengingat 1x per hari.
+   - Notifikasi pengingat H-1 sebelum jadwal pickup dan H-1 sebelum jadwal return.
+4. **Keamanan & Hardening**:
+   - `Model::preventLazyLoading` aktif di non-produksi untuk mencegah masalah N+1.
+   - Rate limiting throttle pada endpoint login (`5 per menit per IP`) dan pembuatan booking (`10 per menit`).
+   - Validasi ketat tipe MIME dan ukuran file upload bukti bayar serta gambar unit.
+   - Akses kontrol berbasis otorisasi Policy dan Middleware peran (`EnsureRole`).
 
-## Agentic Development
+---
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## 🔑 Akun Demo (Seeder)
+
+Seluruh password akun demo adalah: `password`
+
+| Peran (Role) | Nomor HP / Login | Email | Keterangan |
+| :--- | :--- | :--- | :--- |
+| **Administrator** | `081200000001` | `admin@rentalhub.id` | Akses penuh seluruh fitur, laporan CSV, settings, & staff |
+| **Staff Operasional** | `081200000002` | `staff@rentalhub.id` | Manajemen pesanan, pickup, return, walk-in, kalender |
+| **Pelanggan 1** | `081200000003` | `budi@customer.id` | Pelanggan terdaftar dengan contoh riwayat sewa |
+| **Pelanggan 2** | `081200000004` | `siti@customer.id` | Pelanggan terdaftar dengan contoh pesanan aktif |
+
+---
+
+## ⚙️ Panduan Menjalankan Perintah Artisan
+
+Perintah dieksekusi di dalam container aplikasi Adanix (`rental-app-1`):
 
 ```bash
-composer require laravel/boost --dev
+# 1. Jalankan migrasi dan isi data demo realistis
+docker exec rental-app-1 php artisan migrate:fresh --seed
 
-php artisan boost:install
+# 2. Hubungkan symlink storage publik
+docker exec rental-app-1 php artisan storage:link
+
+# 3. Jalankan automated test suite (54 test kasus, 193 assertion)
+docker exec rental-app-1 php artisan test
+
+# 4. Jalankan perintah scheduler rental
+docker exec rental-app-1 php artisan rental:process-schedules
+
+# 5. Kompilasi asset frontend (Tailwind CSS v4 & Alpine.js)
+/opt/adanix/bin/adanix build rental
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## 📂 Struktur Proyek
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```
+app/
+├── Actions/
+│   ├── CreateBookingAction.php          # Atomic reservation & lock
+│   └── TransitionBookingStatusAction.php # State machine & audit log
+├── Console/Commands/
+│   └── ProcessRentalSchedules.php       # Expire pending, overdue, H-1 reminder
+├── Contracts/
+│   └── PaymentGatewayInterface.php      # Abstraksi gateway pembayaran
+├── Enums/                               # PHP Backed Enums untuk semua status
+├── Helpers/helpers.php                  # format_rupiah, format_date_id
+├── Http/Controllers/
+│   ├── Admin/                           # Dashboard, Bookings, Calendar, Reports, Settings, Staff
+│   ├── Auth/                            # Login, Register, Logout
+│   ├── BookingController.php            # Alur pesanan pelanggan
+│   └── CatalogController.php            # Katalog publik & live check
+├── Models/                              # Eloquent models & relasi
+├── Notifications/                       # Notifikasi status & reminder
+└── Services/
+    ├── AvailabilityService.php          # Sweep-line ketersediaan stok
+    ├── ImageResizeService.php           # GD image resize & webp fallback
+    ├── ManualPaymentGateway.php         # Implementasi gateway transfer/QRIS/cash
+    └── PricingService.php               # Durasi, diskon, & kalkulasi harga
+```

@@ -16,7 +16,7 @@ Route::post('/items/{item}/check-availability', [CatalogController::class, 'chec
 // Auth Routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
@@ -26,7 +26,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // Customer Protected Routes (F2 & F3)
 Route::middleware('auth')->group(function () {
     Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
-    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::post('/bookings', [BookingController::class, 'store'])->middleware('throttle:bookings')->name('bookings.store');
 
     Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('my-bookings.index');
     Route::get('/my-bookings/{code}', [BookingController::class, 'show'])->name('my-bookings.show');

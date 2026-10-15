@@ -63,4 +63,4 @@
 - [x] F2: Booking Core (PricingService, CreateBookingAction, Live Alpine Form, My Bookings)
 - [x] F3: Operasional & Siklus Sewa (Payment Gateway, Pickup, Return & Deposit Settlement, Walk-in, Invoice, Scheduler)
 - [x] F4: Dashboard, Kalender, Laporan & Pengaturan (Operational Dashboard, Visual Calendar, CSV Report, Settings, Staff CRUD)
-- [ ] F5: Hardening & Dokumentasi (PreventLazyLoading, Rate Limiting, MIME Validation, Responsive Audit, README)
+- [x] F5: Hardening & Dokumentasi (PreventLazyLoading, Rate Limiting, MIME Validation, Responsive Audit, README)
